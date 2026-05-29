@@ -323,6 +323,31 @@
     .term-btn{flex:1 1 calc(33.333% - 8px);}
     /* LTV row stays horizontal — it's a display row, not an input */
     .ltv-row{flex-direction:row;}
+    /* ----- Collapsible cards on mobile ----- */
+    .card[data-collapsible] .section-title{
+      cursor:pointer;
+      user-select:none;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-bottom:0;
+    }
+    .card[data-collapsible].open .section-title{margin-bottom:18px;}
+    .card-body{
+      overflow:hidden;
+      transition:max-height .35s ease, opacity .25s ease;
+      max-height:0;
+      opacity:0;
+    }
+    .card[data-collapsible].open .card-body{max-height:2400px;opacity:1;}
+    .chevron{
+      display:inline-block;
+      font-size:11px;
+      color:var(--muted);
+      transition:transform .25s;
+      transform:rotate(-90deg);
+    }
+    .card[data-collapsible].open .chevron{transform:rotate(0deg);}
   }
   @media (max-width:380px){
     .term-btn{flex:1 1 calc(50% - 8px);}
@@ -342,9 +367,9 @@
 
       <!-- ============ INPUTS ============ -->
       <div>
-        <div class="card">
-          <p class="section-title">Your Loan Details</p>
-
+        <div class="card" data-collapsible>
+          <p class="section-title">Your Loan Details <span class="chevron">&#9660;</span></p>
+          <div class="card-body">
           <div class="field">
             <div class="field-head">
               <label for="balance">First Mortgage Balance</label>
@@ -381,11 +406,12 @@
             </div>
             <input type="range" id="currentRate_s" min="0" max="15" step="0.05" value="7">
           </div>
+          </div><!-- /card-body -->
         </div>
 
-        <div class="card">
-          <p class="section-title">Annual Costs</p>
-
+        <div class="card" data-collapsible>
+          <p class="section-title">Annual Costs <span class="chevron">&#9660;</span></p>
+          <div class="card-body">
           <div class="field">
             <div class="field-head">
               <label for="taxes">Annual Property Taxes</label>
@@ -409,10 +435,12 @@
             </div>
             <input type="range" id="hoa_s" min="0" max="10000" step="100" value="1500">
           </div>
+          </div><!-- /card-body -->
         </div>
 
-        <div class="card">
-          <p class="section-title">New Loan Terms</p>
+        <div class="card" data-collapsible>
+          <p class="section-title">New Loan Terms <span class="chevron">&#9660;</span></p>
+          <div class="card-body">
 
           <div class="field">
             <div class="field-head" style="margin-bottom:12px;">
@@ -445,6 +473,7 @@
           </div>
 
           <button type="button" class="reset-btn" id="resetBtn">Reset to Defaults</button>
+          </div><!-- /card-body -->
         </div>
       </div>
 
@@ -723,6 +752,30 @@
 
   // ---- init ----
   recalc();
+
+  // ---- collapsible sections (mobile only) ----
+  (function(){
+    function isMobile(){ return window.innerWidth <= 768; }
+    var collCards = document.querySelectorAll('.card[data-collapsible]');
+    collCards.forEach(function(card, i){
+      card.querySelector('.section-title').addEventListener('click', function(){
+        if(!isMobile()) return;
+        card.classList.toggle('open');
+        reportHeight();
+      });
+    });
+    function openFirst(){
+      if(!isMobile()) return;
+      collCards.forEach(function(c){ c.classList.remove('open'); });
+      if(collCards[0]) collCards[0].classList.add('open');
+    }
+    // Init on load
+    if(document.readyState === 'loading'){
+      document.addEventListener('DOMContentLoaded', openFirst);
+    } else {
+      openFirst();
+    }
+  })();
 
   // ---- auto-resize iframe in Squarespace ----
   function reportHeight(){
